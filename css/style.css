@@ -23,6 +23,10 @@
     --shadow: 0 24px 80px rgba(17, 16, 15, .18)
 }
 
+.deep {
+  color: var(--deep);
+}
+
 * {
     box-sizing: border-box
 }
@@ -675,7 +679,7 @@ h2 i {
 }
 
 .booking-band:after {
-    content: "MJ";
+    content: "M";
     position: absolute;
     right: -2rem;
     bottom: -10rem;
@@ -1116,7 +1120,7 @@ footer {
 /* enorme monogramma ornamentale */
 
 .services-cards-section::before {
-    content: "MJ";
+    content: "M";
 
     position: absolute;
     top: -7rem;
