@@ -21,26 +21,211 @@
       `${C.business.address}, ${C.business.postalCity}`;
     $("#year").textContent = new Date().getFullYear();
   }
-  function menu() {
-    const b = $(".menu-toggle"),
-      n = $("#nav");
-    const close = () => {
-      document.body.classList.remove("menu-open");
-      b.setAttribute("aria-expanded", "false");
-    };
+function menu() {
+    const b = $(".menu-toggle");
+    const n = $("#nav");
+
+    if (!b || !n) {
+        return;
+    }
+
+    let scrollPosition = 0;
+
+
+    function unlockBody() {
+        document.documentElement.classList.remove("menu-open");
+        document.body.classList.remove("menu-open");
+
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.width = "";
+
+        b.setAttribute("aria-expanded", "false");
+        b.setAttribute("aria-label", "Apri menu");
+    }
+
+
+    function open() {
+        scrollPosition = window.scrollY;
+
+        document.documentElement.classList.add("menu-open");
+        document.body.classList.add("menu-open");
+
+        /*
+         * Congela la pagina esattamente
+         * nel punto in cui si trova.
+         */
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollPosition}px`;
+        document.body.style.left = "0";
+        document.body.style.right = "0";
+        document.body.style.width = "100%";
+
+        b.setAttribute("aria-expanded", "true");
+        b.setAttribute("aria-label", "Chiudi menu");
+    }
+
+
+    /*
+     * Chiusura normale tramite hamburger / ESC.
+     *
+     * In questo caso vogliamo rimanere esattamente
+     * nella posizione precedente.
+     */
+    function close() {
+        const isOpen =
+            document.body.classList.contains("menu-open");
+
+        if (!isOpen) {
+            return;
+        }
+
+        unlockBody();
+
+        window.scrollTo({
+            top: scrollPosition,
+            left: 0,
+            behavior: "instant"
+        });
+    }
+
+
+    /*
+     * Navigazione verso una sezione.
+     *
+     * Qui NON dobbiamo tornare a scrollPosition.
+     */
+    function navigateToSection(link) {
+        const href = link.getAttribute("href");
+
+        if (
+            !href ||
+            !href.startsWith("#") ||
+            href === "#"
+        ) {
+            return false;
+        }
+
+        const target = document.querySelector(href);
+
+        if (!target) {
+            return false;
+        }
+
+        /*
+         * Prima sblocchiamo completamente
+         * il documento.
+         */
+        unlockBody();
+
+
+        /*
+         * Poi navighiamo davvero
+         * alla sezione richiesta.
+         */
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+
+        /*
+         * Mantiene aggiornato anche
+         * l'hash nell'URL.
+         */
+        if (history.pushState) {
+            history.pushState(
+                null,
+                "",
+                href
+            );
+        }
+
+        return true;
+    }
+
+
+    /*
+     * Hamburger
+     */
     b.addEventListener("click", () => {
-      const o = !document.body.classList.contains("menu-open");
-      document.body.classList.toggle("menu-open", o);
-      b.setAttribute("aria-expanded", String(o));
-      if (o) n.querySelector("a").focus();
+        const isOpen =
+            document.body.classList.contains("menu-open");
+
+        if (isOpen) {
+            close();
+        } else {
+            open();
+        }
     });
+
+
+    /*
+     * Click link navbar
+     */
     n.addEventListener("click", (e) => {
-      if (e.target.closest("a")) close();
+        const link =
+            e.target.closest("a");
+
+        if (!link) {
+            return;
+        }
+
+        const href =
+            link.getAttribute("href");
+
+
+        /*
+         * Link interni
+         *
+         * Home
+         * Barberia
+         * Servizi
+         * Esperienza
+         * Galleria
+         * Contatti
+         */
+        if (
+            href &&
+            href.startsWith("#") &&
+            href !== "#"
+        ) {
+            e.preventDefault();
+
+            navigateToSection(link);
+
+            return;
+        }
+
+
+        /*
+         * Collegamenti esterni,
+         * ad esempio Prenota.
+         *
+         * Chiudiamo semplicemente il menu
+         * senza interferire con il link.
+         */
+        unlockBody();
     });
+
+
+    /*
+     * ESC
+     */
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") close();
+        if (
+            e.key === "Escape" &&
+            document.body.classList.contains("menu-open")
+        ) {
+            close();
+
+            b.focus();
+        }
     });
-  }
+}
+
   function services() {
     // const list = $("#services-list");
     // C.services.forEach((s, i) => {
